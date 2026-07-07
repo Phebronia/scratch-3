@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<title>استوديو الخيال | STS Academy</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@500;700;800&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#FDF8EE; --ink:#2A2D34; --grid:#EBE2CC; --card:#fff;
+    --blue:#2B6CE6; --orange:#FF6B35; --green:#2FA866;
+    --yellow:#F4B41A; --purple:#8E5BD4;
+  }
+  *{box-sizing:border-box; margin:0}
+  body{
+    font-family:'Tajawal',sans-serif; color:var(--ink); background:var(--paper);
+    background-image:
+      linear-gradient(var(--grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size:34px 34px;
+    min-height:100vh; display:flex; flex-direction:column; align-items:center;
+    padding:18px 12px 50px;
+  }
+  h1,h2,h3,.font-fun{font-family:'Baloo Bhaijaan 2',cursive}
+  .badge{
+    display:inline-block; background:var(--ink); color:var(--paper);
+    font-weight:700; font-size:.85rem; padding:4px 14px; border-radius:999px;
+    transform:rotate(-2deg); letter-spacing:.5px;
+  }
+  header{text-align:center; margin-bottom:6px}
+  h1{font-weight:800; font-size:clamp(1.8rem,6vw,2.9rem); line-height:1.2; margin:8px 0 2px}
+  h1 .c1{color:var(--orange)} h1 .c2{color:var(--purple)} h1 .c3{color:var(--green)}
+  .sub{color:#5a5e66; max-width:44ch; margin:0 auto}
+
+  .screen{display:none; flex-direction:column; align-items:center; width:100%}
+  .screen.on{display:flex}
+
+  /* ====== شاشة الرفع ====== */
+  .sheet{
+    position:relative; background:var(--card); width:min(460px,100%);
+    margin-top:28px; padding:34px 26px 26px;
+    border:2.5px dashed var(--ink); border-radius:14px;
+    box-shadow:6px 8px 0 rgba(42,45,52,.12);
+  }
+  .tape{position:absolute; top:-14px; width:92px; height:28px;
+    background:rgba(255,201,60,.75); border-radius:3px; box-shadow:0 1px 2px rgba(0,0,0,.08)}
+  .tape.left{left:22px; transform:rotate(5deg)}
+  .tape.right{right:22px; transform:rotate(-4deg)}
+  .drop{display:flex; flex-direction:column; align-items:center; gap:10px;
+    padding:24px 12px; border:2px solid var(--grid); border-radius:12px;
+    background:var(--paper); cursor:pointer; text-align:center}
+  .drop:hover{border-color:var(--blue)}
+  .drop .icon{font-size:2.6rem; line-height:1}
+  .drop strong{font-family:'Baloo Bhaijaan 2',cursive; font-size:1.2rem}
+  .drop small{color:#777}
+  .drop input{position:absolute; opacity:0; width:1px; height:1px}
+  .preview{max-width:100%; max-height:200px; border-radius:10px; display:none; border:2px solid var(--grid)}
+  .big-btn{
+    display:block; width:100%; margin-top:16px; padding:15px;
+    font-family:'Baloo Bhaijaan 2',cursive; font-size:1.3rem; font-weight:800;
+    color:#fff; background:var(--blue); border:none; border-radius:12px;
+    box-shadow:0 5px 0 #1c4dad; cursor:pointer;
+  }
+  .big-btn:active{transform:translateY(4px); box-shadow:0 1px 0 #1c4dad}
+  .big-btn:disabled{background:#b9c3d6; box-shadow:0 5px 0 #98a3b8}
+  .error{margin-top:14px; background:#FFE9E2; border:2px solid var(--orange);
+    border-radius:10px; padding:10px 14px; font-weight:500; text-align:center; display:none}
+
+  /* ====== شاشة اختيار النوع ====== */
+  .modes{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+    gap:14px; width:min(640px,100%); margin-top:26px}
+  .mode{
+    background:var(--card); border:2.5px solid var(--ink); border-radius:16px;
+    padding:22px 10px 16px; text-align:center; cursor:pointer;
+    box-shadow:4px 5px 0 rgba(42,45,52,.12); transition:transform .1s;
+  }
+  .mode:hover{transform:translateY(-3px) rotate(-1deg)}
+  .mode .em{font-size:2.6rem; display:block; margin-bottom:6px}
+  .mode b{font-family:'Baloo Bhaijaan 2',cursive; font-size:1.2rem}
+  .mode p{font-size:.85rem; color:#5a5e66; margin-top:4px}
+
+  /* ====== الاستوديو ====== */
+  #scrStudio{max-width:980px}
+  .toolbar{
+    display:flex; flex-wrap:wrap; gap:8px; justify-content:center;
+    width:100%; margin:12px 0;
+  }
+  .tool{
+    font-family:'Baloo Bhaijaan 2',cursive; font-weight:700; font-size:1rem;
+    padding:9px 16px; border-radius:11px; border:2.5px solid var(--ink);
+    background:var(--card); cursor:pointer; box-shadow:0 3px 0 rgba(42,45,52,.25);
+  }
+  .tool:active{transform:translateY(3px); box-shadow:none}
+  .tool.primary{background:var(--green); color:#fff; border-color:#1f7a49}
+  .tool.warn{background:var(--orange); color:#fff; border-color:#c8441c}
+  .tool.export{background:var(--purple); color:#fff; border-color:#6a3fa8}
+  .tool.on{outline:3px solid var(--yellow)}
+
+  .stagewrap{
+    position:relative; width:100%; background:var(--card);
+    border:2.5px dashed var(--ink); border-radius:14px; overflow:hidden;
+    box-shadow:6px 8px 0 rgba(42,45,52,.12);
+  }
+  #stage{display:block; width:100%; height:auto; touch-action:none; cursor:grab}
+  .hint-toast{
+    position:absolute; top:10px; right:50%; transform:translateX(50%);
+    background:var(--ink); color:#fff; font-weight:700; padding:8px 18px;
+    border-radius:999px; font-size:.95rem; display:none; z-index:6; white-space:nowrap;
+  }
+  .score-chip{
+    position:absolute; top:10px; left:12px; z-index:5; display:none;
+    font-family:'Baloo Bhaijaan 2',cursive; font-weight:800; font-size:1.2rem;
+    background:rgba(255,255,255,.9); border:2px solid var(--yellow);
+    color:#B07E00; border-radius:999px; padding:3px 16px;
+  }
+  .controls-box{
+    display:none; width:100%; margin-top:8px; padding:9px 12px;
+    background:var(--card); border:2.5px solid var(--ink); border-radius:12px;
+    box-shadow:4px 5px 0 rgba(42,45,52,.12);
+    align-items:center; justify-content:space-between; gap:10px;
+  }
+  .cgroup{display:none; gap:10px}
+  .clabel{font-size:.78rem; color:#8a8d94; font-weight:700}
+  .tbtn{width:52px; height:52px; border-radius:50%; background:var(--ink);
+    color:#fff; border:none; font-size:1.35rem; display:flex; align-items:center;
+    justify-content:center; touch-action:none; box-shadow:0 3px 0 rgba(42,45,52,.3)}
+  .tbtn:active{transform:translateY(3px); box-shadow:none}
+  .tbtn.jump{background:var(--green); box-shadow:0 3px 0 #1f7a49}
+  .endov{
+    position:absolute; inset:0; z-index:7; display:none; flex-direction:column;
+    align-items:center; justify-content:center; gap:10px; text-align:center;
+    background:rgba(253,248,238,.93); padding:16px;
+  }
+  .endov h2{font-size:clamp(1.6rem,6vw,2.4rem); font-weight:800}
+  .endov p{color:#5a5e66; font-weight:500}
+
+  /* اللوحات */
+  .panels{width:100%; margin-top:16px}
+  .ptabs{display:flex; gap:6px; margin-bottom:-2px; padding:0 10px}
+  .ptab{
+    font-family:'Baloo Bhaijaan 2',cursive; font-weight:700; font-size:1rem;
+    background:var(--grid); border:2.5px solid var(--ink); border-bottom:none;
+    border-radius:12px 12px 0 0; padding:8px 18px; cursor:pointer;
+  }
+  .ptab.on{background:var(--card)}
+  .pbody{
+    background:var(--card); border:2.5px solid var(--ink); border-radius:14px;
+    padding:16px; min-height:150px; box-shadow:4px 5px 0 rgba(42,45,52,.1);
+  }
+  .pane{display:none}
+  .pane.on{display:block}
+
+  /* عناصري */
+  .items-grid{display:flex; flex-wrap:wrap; gap:12px}
+  .item-card{
+    width:110px; background:var(--paper); border:2px solid var(--ink);
+    border-radius:12px; padding:8px; text-align:center; position:relative;
+  }
+  .item-card img{width:100%; height:66px; object-fit:contain;
+    background:repeating-conic-gradient(#eee 0 25%, #fff 0 50%) 0 0/14px 14px;
+    border-radius:8px}
+  .item-card b{display:block; font-size:.95rem; margin-top:4px}
+  .item-card .mini{display:flex; justify-content:center; gap:6px; margin-top:5px}
+  .mini button{border:none; background:var(--grid); border-radius:8px;
+    padding:3px 8px; cursor:pointer; font-size:.95rem}
+  .item-card.player{outline:3px solid var(--yellow)}
+  .scene-card{width:150px}
+  .scene-card img{height:84px; object-fit:cover; background:#f4f2ec}
+  .scene-card.on{outline:3px solid var(--green)}
+  .item-card .ptag{position:absolute; top:-10px; right:-6px; background:var(--yellow);
+    border:2px solid var(--ink); border-radius:999px; font-size:.7rem;
+    font-weight:800; padding:1px 8px; display:none}
+  .item-card.player .ptag{display:block}
+  .empty-note{color:#8a8d94; text-align:center; padding:14px}
+
+  /* أفكاري */
+  .qlist{display:flex; flex-direction:column; gap:10px}
+  .q{display:flex; flex-direction:column; gap:4px}
+  .q label{font-weight:700}
+  .q input{
+    border:2px solid var(--grid); border-radius:10px; padding:9px 12px;
+    font-family:'Tajawal'; font-size:1rem; background:var(--paper);
+  }
+  .q input:focus{outline:none; border-color:var(--blue)}
+
+  /* القواعد */
+  .rules-list{display:flex; flex-direction:column; gap:10px}
+  .rule-row{
+    display:flex; align-items:center; gap:10px; background:var(--paper);
+    border:2px solid var(--ink); border-radius:12px; padding:10px 14px;
+  }
+  .rule-row .sent{flex:1; font-weight:500; overflow-wrap:anywhere; word-break:break-word; min-width:0}
+  .rule-row .sent .tg{color:var(--orange); font-weight:800}
+  .rule-row .sent .it{color:var(--blue); font-weight:800}
+  .rule-row button{border:none; background:var(--grid); border-radius:8px;
+    padding:4px 9px; cursor:pointer}
+
+  /* ====== المودالات ====== */
+  .modal-bg{
+    position:fixed; inset:0; background:rgba(42,45,52,.45); z-index:20;
+    display:none; align-items:flex-start; justify-content:center;
+    padding:24px 12px; overflow-y:auto;
+  }
+  .modal-bg.on{display:flex}
+  .modal{
+    background:var(--card); border:2.5px solid var(--ink); border-radius:16px;
+    width:min(560px,100%); padding:20px; box-shadow:8px 10px 0 rgba(42,45,52,.2);
+    overflow-x:hidden;
+  }
+  .modal h3{font-size:1.35rem; margin-bottom:12px}
+  .cards{display:flex; flex-wrap:wrap; gap:10px}
+  .pick{
+    border:2.5px solid var(--ink); background:var(--paper); border-radius:12px;
+    padding:10px 12px; cursor:pointer; text-align:center; min-width:96px;
+    font-family:'Tajawal'; box-shadow:0 3px 0 rgba(42,45,52,.2);
+  }
+  .pick .em{font-size:1.7rem; display:block}
+  .pick b{font-size:.92rem}
+  .pick.on{outline:3px solid var(--yellow); background:#FFF7E0}
+  .pick:active{transform:translateY(2px); box-shadow:none}
+  .trigger-card{border-color:#c8441c; background:#FFF1EA}
+  .action-card{border-color:#1c4dad; background:#EDF3FF}
+  .param-row{margin-top:12px; display:none; flex-wrap:wrap; gap:8px; align-items:center}
+  .param-row.on{display:flex}
+  .param-row input, .param-row select{
+    border:2px solid var(--grid); border-radius:10px; padding:8px 12px;
+    font-family:'Tajawal'; font-size:1rem; flex:1; min-width:120px;
+  }
+  .sentence{
+    margin-top:14px; background:var(--paper); border:2px dashed var(--ink);
+    border-radius:12px; padding:12px; font-weight:700; text-align:center; min-height:48px;
+    overflow-wrap:anywhere; word-break:break-word;
+  }
+  .modal-actions{display:flex; gap:10px; margin-top:14px; justify-content:flex-end}
+  .chips{display:flex; flex-wrap:wrap; gap:6px; margin-top:10px}
+  .chip{background:#EDF3FF; border:2px solid var(--blue); border-radius:14px;
+    padding:3px 12px; font-size:.9rem; font-weight:700;
+    max-width:100%; overflow-wrap:anywhere; word-break:break-word}
+  .chip button{border:none; background:none; cursor:pointer; font-weight:800}
+  .step-label{font-weight:800; color:#8a8d94; font-size:.85rem; margin:14px 0 6px}
+
+  /* التصدير */
+  .exp-tabs{display:flex; gap:8px; margin-bottom:12px}
+  .exp-tab{font-family:'Baloo Bhaijaan 2',cursive; font-weight:700; padding:7px 16px;
+    border-radius:10px; border:2.5px solid var(--ink); background:var(--grid); cursor:pointer}
+  .exp-tab.on{background:var(--yellow)}
+  .plan{line-height:1.9; overflow-wrap:anywhere}
+  .plan h4{font-family:'Baloo Bhaijaan 2',cursive; margin:12px 0 4px; color:var(--purple)}
+  .plan ul, .plan ol{padding-right:22px}
+  .plan .blockhint{background:var(--paper); border-radius:8px; padding:1px 8px;
+    font-size:.9rem; border:1px solid var(--grid)}
+
+  footer{margin-top:34px; color:#8a8d94; font-size:.9rem}
+
+  /* ====== مقاسات الموبايل ====== */
+  @media (max-width:640px){
+    body{padding:10px 8px 30px; background-size:26px 26px}
+    .badge{font-size:.75rem; padding:3px 11px}
+    h1{font-size:1.7rem; margin:6px 0 2px}
+    .sub{font-size:.92rem}
+    /* جوه الاستوديو: الهيدر يتضغط عشان المسرح ياخد الشاشة */
+    body.compact header{margin-bottom:2px}
+    body.compact h1{font-size:1.25rem; margin:4px 0 0}
+    body.compact .sub{display:none}
+    body.compact .badge{display:none}
+    .toolbar{gap:6px; margin:8px 0}
+    .tool{font-size:.92rem; padding:8px 11px; border-width:2px}
+    .stagewrap{border-width:2px; border-radius:11px; box-shadow:3px 4px 0 rgba(42,45,52,.12)}
+    .panels{margin-top:10px}
+    .ptabs{padding:0 6px; gap:4px}
+    .ptab{font-size:.85rem; padding:7px 9px; border-width:2px}
+    .pbody{padding:11px; border-width:2px}
+    .item-card{width:calc(33.4% - 8px)}
+    .scene-card{width:calc(50% - 6px)}
+    .rule-row{padding:9px 10px; gap:6px; flex-wrap:wrap}
+    .rule-row .sent{flex:1 1 100%; font-size:.95rem}
+    .modal{padding:16px 13px; border-width:2px}
+    .modal h3{font-size:1.2rem}
+    .pick{min-width:31%; padding:9px 8px; flex:1 1 auto}
+    .pick .em{font-size:1.45rem}
+    .pick b{font-size:.85rem}
+    .hint-toast{font-size:.85rem; padding:7px 14px; max-width:94%; white-space:normal; text-align:center}
+    .sheet{padding:28px 16px 20px}
+    .legend{padding:14px 14px}
+  }
+  @media print{
+    body *{visibility:hidden} .modal-bg.on, .modal-bg.on *{visibility:visible}
+    .modal-bg{position:absolute; background:#fff; padding:0}
+    .modal{border:none; box-shadow:none; width:100%}
+    .modal-actions,.exp-tabs{display:none}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <span class="badge">STS Academy ✦ استوديو الخيال</span>
+  <h1><span class="c1">ارسم.</span> <span class="c2">تخيّل.</span> <span class="c3">ابنيها!</span></h1>
+  <p class="sub" id="subTitle">خطّط فكرتك من رسمتك، جرّبها، وبعدين ابنيها بنفسك في Scratch أو Scratch Jr</p>
+</header>
+
+<!-- ========== 1) الرفع ========== -->
+<section class="screen on" id="scrUpload">
+  <div class="sheet">
+    <span class="tape left"></span><span class="tape right"></span>
+    <label class="drop">
+      <span class="icon" id="upIcon">📸</span>
+      <strong id="dropTitle">صوّر رسمتك أو اختارها من الصور 🖼️</strong>
+      <small>من الكاميرا أو الجاليري — ارسم مشهدك كله على ورقة</small>
+      <img class="preview" id="upPreview" alt="معاينة رسمتك">
+      <input type="file" id="file" accept="image/*">
+    </label>
+    <button class="big-btn" id="goStudio" disabled>افتح الاستوديو ✨</button>
+    <div class="error" id="upError"></div>
+  </div>
+  <footer>Smart Techno Students Academy</footer>
+</section>
+
+<!-- ========== 2) نوع الفكرة ========== -->
+<section class="screen" id="scrMode">
+  <h2 class="font-fun" style="margin-top:22px; font-size:1.6rem">إنت بتعمل إيه النهارده؟ 🤔</h2>
+  <div class="modes">
+    <div class="mode" data-mode="story"><span class="em">📖</span><b>قصة</b><p>شخصيات بتتكلم وبتحصل أحداث</p></div>
+    <div class="mode" data-mode="anim"><span class="em">🎬</span><b>أنيميشن</b><p>حاجات بتتحرك لوحدها</p></div>
+    <div class="mode" data-mode="game"><span class="em">🎮</span><b>لعبة</b><p>لاعب بيجمع وبيكسب</p></div>
+    <div class="mode" data-mode="scene"><span class="em">✨</span><b>مشهد تفاعلي</b><p>دوس على حاجة تعمل حاجة</p></div>
+  </div>
+</section>
+
+<!-- ========== 3) الاستوديو ========== -->
+<section class="screen" id="scrStudio">
+  <div class="toolbar">
+    <button class="tool" id="btnCut">✂️ قصّ عنصر</button>
+    <button class="tool primary" id="btnPreview">▶ جرّب فكرتي</button>
+    <button class="tool warn" id="btnStop" style="display:none">⏹ وقّف التجربة</button>
+    <button class="tool export" id="btnExport">📜 ابنيها في سكراتش</button>
+  </div>
+
+  <div class="stagewrap">
+    <canvas id="stage" width="960" height="720"></canvas>
+    <div class="hint-toast" id="toast"></div>
+    <div class="score-chip" id="scoreChip">⭐ 0</div>
+    <div class="endov" id="endOv">
+      <h2 id="endTitle"></h2>
+      <p id="endMsg"></p>
+      <button class="tool primary" id="endRetry">🔁 جرّب تاني</button>
+    </div>
+  </div>
+
+  <div class="controls-box" id="controlsBox">
+    <div class="cgroup" id="dpadMove">
+      <button class="tbtn" data-k="ArrowUp">▲</button>
+      <button class="tbtn" data-k="ArrowRight">◀</button>
+      <button class="tbtn" data-k="ArrowLeft">▶</button>
+      <button class="tbtn" data-k="ArrowDown">▼</button>
+    </div>
+    <span class="clabel">زراير اللعب 🎮</span>
+    <div class="cgroup" id="keyBtns"></div>
+  </div>
+
+  <div class="panels">
+    <div class="ptabs">
+      <button class="ptab on" data-pane="items">🧩 عناصري</button>
+      <button class="ptab" data-pane="scenes">🖼️ مشاهدي</button>
+      <button class="ptab" data-pane="ideas">💡 أفكاري</button>
+      <button class="ptab" data-pane="rules">🃏 القواعد</button>
+    </div>
+    <div class="pbody">
+      <div class="pane on" id="pane-items">
+        <div class="items-grid" id="itemsGrid"></div>
+        <p class="empty-note" id="itemsEmpty">لسه مفيش عناصر — دوس ✂️ قصّ عنصر وحوّط على حاجة في رسمتك</p>
+      </div>
+      <div class="pane" id="pane-scenes">
+        <label class="tool" style="display:inline-block; margin-bottom:12px; cursor:pointer">
+          ➕ ضيف مشهد جديد
+          <input type="file" id="sceneFile" accept="image/*" style="display:none">
+        </label>
+        <div class="items-grid" id="scenesGrid"></div>
+        <p class="empty-note">ارسم كل مشهد على ورقة لوحده — وبطاقة 🌙 «يغيّر المشهد» بتنقل بينهم</p>
+      </div>
+      <div class="pane" id="pane-ideas">
+        <div class="qlist" id="qList"></div>
+      </div>
+      <div class="pane" id="pane-rules">
+        <button class="tool" id="btnNewRule" style="margin-bottom:12px">➕ قاعدة جديدة</button>
+        <div class="rules-list" id="rulesList"></div>
+        <p class="empty-note" id="rulesEmpty">القاعدة بتقول: <b style="color:var(--orange)">إمتى</b> + <b style="color:var(--blue)">مين</b> + <b>يعمل إيه</b></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== مودال تسمية عنصر ========== -->
+<div class="modal-bg" id="nameModal">
+  <div class="modal">
+    <h3>سمّي العنصر ده 🏷️</h3>
+    <img id="nameThumb" style="display:block; margin:0 auto 12px; max-height:110px;
+      background:repeating-conic-gradient(#eee 0 25%, #fff 0 50%) 0 0/14px 14px; border-radius:10px">
+    <input id="nameInput" placeholder="مثلاً: القطة، الشمس، الوحش…" style="width:100%;
+      border:2px solid var(--grid); border-radius:10px; padding:10px 12px; font-family:'Tajawal'; font-size:1.05rem">
+    <div class="modal-actions">
+      <button class="tool" id="nameCancel">إلغاء</button>
+      <button class="tool primary" id="nameOk">تمام ✓</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== مودال بناء قاعدة ========== -->
+<div class="modal-bg" id="ruleModal">
+  <div class="modal">
+    <h3>🃏 قاعدة جديدة</h3>
+
+    <div class="step-label">١ — إمتى؟ (بطاقة برتقالي)</div>
+    <div class="cards" id="triggerCards"></div>
+    <div class="param-row" id="trigParams"></div>
+
+    <div class="step-label">٢ — مين؟</div>
+    <div class="cards" id="itemCards"></div>
+
+    <div class="step-label">٣ — يعمل إيه؟ (بطاقات زرقا — ينفع أكتر من واحدة)</div>
+    <div class="cards" id="actionCards"></div>
+    <div class="param-row" id="actParams"></div>
+    <div class="chips" id="actChips"></div>
+
+    <div class="sentence" id="ruleSentence">…</div>
+
+    <div class="modal-actions">
+      <button class="tool" id="ruleCancel">إلغاء</button>
+      <button class="tool primary" id="ruleSave">احفظ القاعدة ✓</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== مودال التصدير ========== -->
+<div class="modal-bg" id="exportModal">
+  <div class="modal" style="width:min(680px,100%)">
+    <h3>📜 خطة البناء بتاعتك</h3>
+    <div class="exp-tabs">
+      <button class="exp-tab on" data-exp="scratch">🐱 Scratch</button>
+      <button class="exp-tab" data-exp="jr">🧒 Scratch Jr</button>
+    </div>
+    <div class="plan" id="planBody"></div>
+    <div class="modal-actions">
+      <button class="tool" id="expPrint">🖨️ اطبع الخطة</button>
+      <button class="tool primary" id="expClose">تمام ✓</button>
+    </div>
+  </div>
+</div>
+
+<script src="studio.js"></script>
+</body>
+</html>

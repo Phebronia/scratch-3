@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<title>معاينة مقاس الموبايل | استوديو الخيال</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@700;800&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{--paper:#FDF8EE; --ink:#2A2D34; --grid:#EBE2CC; --blue:#2B6CE6;
+        --orange:#FF6B35; --green:#2FA866; --yellow:#F4B41A; --purple:#8E5BD4}
+  *{box-sizing:border-box; margin:0}
+  body{
+    font-family:'Tajawal',sans-serif; color:var(--ink); background:var(--paper);
+    background-image:linear-gradient(var(--grid) 1px,transparent 1px),
+      linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+    background-size:26px 26px; min-height:100vh; padding:10px 8px 30px;
+  }
+  .note{
+    background:#FFF7E0; border:2px dashed var(--yellow); border-radius:10px;
+    padding:8px 12px; font-size:.88rem; font-weight:500; text-align:center; margin-bottom:8px;
+  }
+  header{text-align:center; margin-bottom:2px}
+  h1{font-family:'Baloo Bhaijaan 2',cursive; font-weight:800; font-size:1.25rem; margin:4px 0 0}
+  h1 em{font-style:normal; color:var(--orange)}
+
+  .toolbar{display:flex; flex-wrap:wrap; gap:6px; justify-content:center; margin:8px 0}
+  .tool{font-family:'Baloo Bhaijaan 2',cursive; font-weight:700; font-size:.92rem;
+    padding:8px 11px; border-radius:11px; border:2px solid var(--ink); background:#fff;
+    cursor:pointer; box-shadow:0 3px 0 rgba(42,45,52,.25)}
+  .tool:active{transform:translateY(3px); box-shadow:none}
+  .tool.primary{background:var(--green); color:#fff; border-color:#1f7a49}
+  .tool.export{background:var(--purple); color:#fff; border-color:#6a3fa8}
+
+  .stagewrap{position:relative; width:100%; background:#fff; border:2px dashed var(--ink);
+    border-radius:11px; overflow:hidden; box-shadow:3px 4px 0 rgba(42,45,52,.12)}
+  canvas{display:block; width:100%; height:auto; touch-action:none}
+  .score-chip{position:absolute; top:8px; left:10px; font-family:'Baloo Bhaijaan 2',cursive;
+    font-weight:800; font-size:1.1rem; background:rgba(255,255,255,.9);
+    border:2px solid var(--yellow); color:#B07E00; border-radius:999px; padding:2px 13px}
+  .controls-box{
+    display:none; margin-top:8px; padding:9px 12px;
+    background:#fff; border:2px solid var(--ink); border-radius:12px;
+    box-shadow:3px 4px 0 rgba(42,45,52,.12);
+    align-items:center; justify-content:space-between; gap:10px;
+  }
+  .cgroup{display:flex; gap:10px}
+  .clabel{font-size:.78rem; color:#8a8d94; font-weight:700}
+  .tbtn{width:52px; height:52px; border-radius:50%; background:var(--ink);
+    color:#fff; border:none; font-size:1.35rem; display:flex; align-items:center;
+    justify-content:center; touch-action:none; box-shadow:0 3px 0 rgba(42,45,52,.3)}
+  .tbtn:active{transform:translateY(3px); box-shadow:none}
+  .tbtn.jump{background:var(--green); box-shadow:0 3px 0 #1f7a49}
+
+  .panels{margin-top:10px}
+  .ptabs{display:flex; gap:4px; padding:0 6px; margin-bottom:-2px}
+  .ptab{font-family:'Baloo Bhaijaan 2',cursive; font-weight:700; font-size:.85rem;
+    background:var(--grid); border:2px solid var(--ink); border-bottom:none;
+    border-radius:11px 11px 0 0; padding:7px 9px; cursor:pointer}
+  .ptab.on{background:#fff}
+  .pbody{background:#fff; border:2px solid var(--ink); border-radius:12px;
+    padding:11px; min-height:120px; box-shadow:3px 4px 0 rgba(42,45,52,.1)}
+  .pane{display:none} .pane.on{display:block}
+
+  .items-grid{display:flex; flex-wrap:wrap; gap:8px}
+  .item-card{width:calc(33.4% - 8px); background:var(--paper); border:2px solid var(--ink);
+    border-radius:11px; padding:7px; text-align:center}
+  .item-card img, .item-card .fake{width:100%; height:56px; border-radius:8px;
+    background:repeating-conic-gradient(#eee 0 25%,#fff 0 50%) 0 0/12px 12px;
+    display:flex; align-items:center; justify-content:center; font-size:1.9rem}
+  .item-card b{display:block; font-size:.88rem; margin-top:3px}
+
+  .rule-row{display:flex; align-items:center; gap:6px; background:var(--paper);
+    border:2px solid var(--ink); border-radius:11px; padding:9px 10px;
+    flex-wrap:wrap; margin-bottom:8px}
+  .rule-row .sent{flex:1 1 100%; font-size:.95rem; font-weight:500}
+  .rule-row .sent .tg{color:var(--orange); font-weight:800}
+  .rule-row .sent .it{color:var(--blue); font-weight:800}
+  .rule-row button{border:none; background:var(--grid); border-radius:8px; padding:4px 10px; font-size:1rem}
+  .empty-note{color:#8a8d94; text-align:center; padding:10px; font-size:.9rem}
+</style>
+</head>
+<body>
+
+<div class="note">📱 دي معاينة للمقاسات بس — افتحيها على موبايلك وقوليلي الشكل مريح ولا لأ.
+  زرار «🎮 شوف زراير اللعب» بيظهر بوكس الزراير تحت اللعبة — مش فوقيها.</div>
+
+<header><h1>استوديو <em>الخيال</em> ✦ لعبة 🎮</h1></header>
+
+<div class="toolbar">
+  <button class="tool">✂️ قصّ عنصر</button>
+  <button class="tool primary" id="demoPlay">🎮 شوف زراير اللعب</button>
+  <button class="tool export">📜 الخطة</button>
+</div>
+
+<div class="stagewrap">
+  <canvas id="stage" width="960" height="720"></canvas>
+  <div class="score-chip">⭐ 2</div>
+</div>
+
+<!-- بوكس الزراير — تحت اللعبة مش فوقيها -->
+<div class="controls-box" id="controlsBox">
+  <div class="cgroup">
+    <button class="tbtn">◀</button>
+    <button class="tbtn">▶</button>
+  </div>
+  <span class="clabel">زراير اللعب 🎮</span>
+  <div class="cgroup">
+    <button class="tbtn jump">⤒</button>
+  </div>
+</div>
+
+<div class="panels">
+  <div class="ptabs">
+    <button class="ptab on" data-p="items">🧩 عناصري</button>
+    <button class="ptab" data-p="scenes">🖼️ مشاهدي</button>
+    <button class="ptab" data-p="ideas">💡 أفكاري</button>
+    <button class="ptab" data-p="rules">🃏 القواعد</button>
+  </div>
+  <div class="pbody">
+    <div class="pane on" id="p-items">
+      <div class="items-grid">
+        <div class="item-card"><div class="fake">🐱</div><b>القطة ⭐</b></div>
+        <div class="item-card"><div class="fake">☀️</div><b>الشمس</b></div>
+        <div class="item-card"><div class="fake">🪙</div><b>العملة</b></div>
+      </div>
+    </div>
+    <div class="pane" id="p-scenes"><p class="empty-note">هنا صور المشاهد — كل مشهد بعناصره</p></div>
+    <div class="pane" id="p-ideas"><p class="empty-note">هنا أسئلة «مين اللاعب؟ بيكسب إزاي؟»</p></div>
+    <div class="pane" id="p-rules">
+      <div class="rule-row">
+        <div class="sent"><span class="tg">لما أدوس المسافة ⎵</span>، <span class="it">القطة</span> تنط.</div>
+        <button>✏️</button><button>🗑️</button>
+      </div>
+      <div class="rule-row">
+        <div class="sent"><span class="tg">لما يلمس العملة</span>، <span class="it">القطة</span> — «العملة» تتجمع وتزيد النقط.</div>
+        <button>✏️</button><button>🗑️</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* رسمة تجريبية بتتعمل بالكود — كأنها ورقة طفل متصورة */
+const c = document.getElementById('stage'), x = c.getContext('2d');
+x.fillStyle = '#F5F3EE'; x.fillRect(0, 0, 960, 720);          // هوامش
+x.fillStyle = '#FBFAF6'; x.fillRect(90, 20, 780, 680);        // الورقة (بالطول شوية)
+x.strokeStyle = '#2A2D34'; x.lineWidth = 9; x.lineCap = 'round';
+// أرضية
+x.beginPath(); x.moveTo(120, 640); x.lineTo(840, 640); x.stroke();
+// بيت
+x.strokeRect(560, 460, 200, 180);
+x.beginPath(); x.moveTo(545, 460); x.lineTo(660, 360); x.lineTo(775, 460); x.closePath();
+x.fillStyle = '#FF6B35'; x.fill(); x.stroke();
+x.fillStyle = '#2B6CE6'; x.fillRect(630, 540, 60, 100); x.strokeRect(630, 540, 60, 100);
+// شمس
+x.strokeStyle = '#F4B41A'; x.lineWidth = 8;
+x.beginPath(); x.arc(200, 130, 48, 0, 7); x.stroke();
+for (let i = 0; i < 8; i++) {
+  const a = i * Math.PI / 4;
+  x.beginPath();
+  x.moveTo(200 + Math.cos(a) * 62, 130 + Math.sin(a) * 62);
+  x.lineTo(200 + Math.cos(a) * 85, 130 + Math.sin(a) * 85);
+  x.stroke();
+}
+// قطة (اللاعب)
+x.strokeStyle = '#2A2D34'; x.lineWidth = 8;
+x.fillStyle = '#8E5BD4';
+x.beginPath(); x.arc(280, 585, 52, 0, 7); x.fill(); x.stroke();          // جسم
+x.beginPath(); x.arc(280, 512, 34, 0, 7); x.fill(); x.stroke();          // راس
+x.beginPath(); x.moveTo(255, 492) ;x.lineTo(262, 462); x.lineTo(276, 486); x.closePath(); x.fill(); x.stroke();
+x.beginPath(); x.moveTo(305, 492); x.lineTo(298, 462); x.lineTo(284, 486); x.closePath(); x.fill(); x.stroke();
+x.fillStyle = '#fff';
+x.beginPath(); x.arc(268, 508, 7, 0, 7); x.fill();
+x.beginPath(); x.arc(292, 508, 7, 0, 7); x.fill();
+// عملات
+for (const [cx, cy] of [[430, 560], [480, 470]]) {
+  x.fillStyle = '#F4B41A'; x.strokeStyle = '#B07E00'; x.lineWidth = 6;
+  x.beginPath(); x.arc(cx, cy, 26, 0, 7); x.fill(); x.stroke();
+}
+
+/* التابات */
+document.querySelectorAll('.ptab').forEach(t => t.addEventListener('click', () => {
+  document.querySelectorAll('.ptab').forEach(z => z.classList.remove('on'));
+  document.querySelectorAll('.pane').forEach(z => z.classList.remove('on'));
+  t.classList.add('on');
+  document.getElementById('p-' + t.dataset.p).classList.add('on');
+}));
+
+/* زراير اللعب التجريبية */
+let on = false;
+document.getElementById('demoPlay').addEventListener('click', () => {
+  on = !on;
+  document.getElementById('controlsBox').style.display = on ? 'flex' : 'none';
+});
+</script>
+</body>
+</html>
